@@ -5,6 +5,7 @@ import(
 	"flag"
 	"log"
 	"os"
+	"util"
 )
 
 var svnXmlFile *string = flag.String("f", "", "svn log with xml format")
@@ -22,6 +23,8 @@ func main() {
 	if _,err := os.Stat(*svnXmlFile); os.IsNotExist(err) {
 		log.Fatalf("svn log file '%s' not exists.", *svnXmlFile)
 	}
+
+	util.GetLineDiff("+123\r-450")
 
     fmt.Println("hello world", *svnXmlFile);
 }
