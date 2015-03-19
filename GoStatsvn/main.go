@@ -24,7 +24,13 @@ func main() {
 		log.Fatalf("svn log file '%s' not exists.", *svnXmlFile)
 	}
 
-	util.GetLineDiff("+123\r-450")
+	stdout, err := util.CallSvnDiff(43876, 43877, "/home/s/www/fukun/svn/BigDataPlatform/trunk/application/models/NewsTop.php")
+	if err == nil {
+		fmt.Println("stdout ",stdout)
+	} else {
+		fmt.Println("err ", err.Error())
+	}
+	appendLines, removeLines, err := util.GetLineDiff(stdout)
+	fmt.Println(appendLines, removeLines, err)
 
-    fmt.Println("hello world", *svnXmlFile);
 }
