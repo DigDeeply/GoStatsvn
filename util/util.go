@@ -7,7 +7,7 @@ import(
 	"bytes"
 )
 
-func CallSvnDiff(oldVer, newVer int, fileName string) (stdout string, err error) {
+func CallSvnDiff(oldVer, newVer int, fileName string) (stdout string, err error) {/*{{{*/
 
 	app := "svn"
 	param1 := "diff"
@@ -25,9 +25,9 @@ func CallSvnDiff(oldVer, newVer int, fileName string) (stdout string, err error)
 	} else {
 		return out.String(), nil
 	}
-}
+}/*}}}*/
 
-func GetLineDiff( diffBuffer string) (appendLines, removeLines int, err error) {
+func GetLineDiff( diffBuffer string) (appendLines, removeLines int, err error) {/*{{{*/
 	//svndiff 结果头部有 --- +++ 标识,从-1开始计数跳过
 	appendLines = -1;
 	removeLines = -1;
@@ -46,4 +46,4 @@ func GetLineDiff( diffBuffer string) (appendLines, removeLines int, err error) {
 		removeLines = 0;
 	}
 	return
-}
+}/*}}}*/
