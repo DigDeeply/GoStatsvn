@@ -6,11 +6,16 @@ import(
 	"log"
 	"os"
 	"util"
-	"encoding/xml"
-	"io/ioutil"
+	"strconv"
 )
 
 var svnXmlFile *string = flag.String("f", "", "svn log with xml format")
+var svnDir *string = flag.String("d", "", "code working directory")
+
+type AuthorStat struct {
+	AppendLines int
+	RemoveLines int
+}
 
 func main() {
 	flag.Parse()
@@ -21,52 +26,64 @@ func main() {
 		return
 	}
 
+	//判断有没有指定svnlog.xml文件
+	if *svnDir == "" {
+		log.Fatal("-d cannot be empty, -d svnWorkDir")
+		return
+	}
+
 	//判断文件是否存在
 	if _,err := os.Stat(*svnXmlFile); os.IsNotExist(err) {
 		log.Fatalf("svn log file '%s' not exists.", *svnXmlFile)
 	}
 
+	//获取svn root目录
+	svnRoot, err := util.GetSvnRoot(*svnDir);
 
-	type Path struct {
-		Action string `xml:"action,attr"`
-		Kind string `xml:"kind,attr"`
-		Path string `xml:",chardata"`
-	}
+	svnXmlLogs, err := util.ParaseSvnXmlLog(*svnXmlFile)
+//	fmt.Printf("%v", svnXmlLogs)
+	util.CheckErr(err)
 
-	type Logentry struct {
-		Revision string `xml:"revision,attr"`
-		Author string `xml:"author"`
-		Date string	`xml:"date"`
-		Paths []Path `xml:"paths>path"`
-		Msg string	`xml:"msg"`
-	}
+	AuthorStats := make(map[string]AuthorStat)
 
-	type SvnXmlLogs struct {
-		Logentry []Logentry `xml:"logentry"`
-	}
-
-	content, err := ioutil.ReadFile(*svnXmlFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	var svnXmlLogs SvnXmlLogs
-	err = xml.Unmarshal(content, &svnXmlLogs)
-	if err != nil {
-		log.Fatal(err)
-	}
-	//fmt.Println(string(content))
-	fmt.Printf("%v", svnXmlLogs)
-
-
-	if err == nil {
-		stdout, err := util.CallSvnDiff(43876, 43877, "/home/s/www/fukun/svn/BigDataPlatform/trunk/application/models/NewsTop.php")
-		if err == nil {
-			fmt.Println("stdout ",stdout)
-		} else {
-			fmt.Println("err ", err.Error())
+	for _, svnXmlLog := range svnXmlLogs.Logentry {
+		newRev, _ := strconv.Atoi(svnXmlLog.Revision)
+		fmt.Printf("svn diff on r%d ,\n", newRev)
+		for _, path := range svnXmlLog.Paths {
+			if path.Action == "M" && path.Kind == "file" {
+				stdout, err := util.CallSvnDiff(newRev-1, newRev, svnRoot+path.Path)
+				if err == nil {
+					//fmt.Println("stdout ",stdout)
+				} else {
+					fmt.Println("err ", err.Error())
+				}
+				appendLines, removeLines, err := util.GetLineDiff(stdout)
+				fmt.Printf("\t%s on r%d +%d -%d,\n", path.Path, newRev, appendLines, removeLines)
+				if err == nil {
+					Author, ok := AuthorStats[svnXmlLog.Author]
+					if ok {
+						Author.AppendLines += appendLines
+						Author.RemoveLines += removeLines
+						AuthorStats[svnXmlLog.Author] = Author
+					} else {
+						Author.AppendLines = appendLines
+						Author.RemoveLines = removeLines
+						AuthorStats[svnXmlLog.Author] = Author
+					}
+					//fmt.Println(appendLines, removeLines, AuthorStats)
+				}
+			}
 		}
-		appendLines, removeLines, err := util.GetLineDiff(stdout)
-		fmt.Println(appendLines, removeLines, err)
 	}
+	//输出结果
+	ConsoleOutPutTable(AuthorStats)
 
 }
+
+//console输出结果
+func ConsoleOutPutTable(AuthorStats map[string]AuthorStat) {/*{{{*/
+	fmt.Printf(" ==user== \t==lines==\n")
+	for author, val := range AuthorStats {
+		fmt.Printf("%10s\t10%d\n", author, val.AppendLines+val.RemoveLines)
+	}
+}/*}}}*/
