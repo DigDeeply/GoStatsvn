@@ -16,3 +16,6 @@ then run the GoStatsvn with -f the svn log file, and -d the svn working director
 svn log -v --xml  > svnlog.xml
 ./GoStatsvn -f svnlog.xml -d workingDirectory
 </code></pre>
+
+#demo
+![demo](http://p3.qhimg.com/d/inn/72054cab/GoStatsvn-stat-result.png "a GoStatsvn result demo")
