@@ -84,6 +84,6 @@ func main() {
 func ConsoleOutPutTable(AuthorStats map[string]AuthorStat) {/*{{{*/
 	fmt.Printf(" ==user== \t==lines==\n")
 	for author, val := range AuthorStats {
-		fmt.Printf("%10s\t10%d\n", author, val.AppendLines+val.RemoveLines)
+		fmt.Printf("%10s\t%d\n", author, val.AppendLines+val.RemoveLines)
 	}
 }/*}}}*/

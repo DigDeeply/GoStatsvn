@@ -18,4 +18,4 @@ svn log -v --xml  > svnlog.xml
 </code></pre>
 
 #demo
-![demo](http://p3.qhimg.com/d/inn/72054cab/GoStatsvn-stat-result.png "a GoStatsvn result demo")
+![demo](http://p9.qhimg.com/d/inn/6379de03/GoStatsvn-stat-result.png "a GoStatsvn result demo")
