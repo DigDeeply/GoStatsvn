@@ -7,15 +7,12 @@ import(
 	"os"
 	"util"
 	"strconv"
+	"statStruct"
 )
 
 var svnXmlFile *string = flag.String("f", "", "svn log with xml format")
 var svnDir *string = flag.String("d", "", "code working directory")
 
-type AuthorStat struct {
-	AppendLines int
-	RemoveLines int
-}
 
 func main() {
 	flag.Parse()
@@ -44,7 +41,9 @@ func main() {
 //	fmt.Printf("%v", svnXmlLogs)
 	util.CheckErr(err)
 
-	AuthorStats := make(map[string]AuthorStat)
+	authorTimeStats := make(statStruct.AuthorTimeStats)
+
+	AuthorStats := make(map[string]statStruct.AuthorStat)
 
 	for _, svnXmlLog := range svnXmlLogs.Logentry {
 		newRev, _ := strconv.Atoi(svnXmlLog.Revision)
@@ -64,24 +63,27 @@ func main() {
 					if ok {
 						Author.AppendLines += appendLines
 						Author.RemoveLines += removeLines
-						AuthorStats[svnXmlLog.Author] = Author
 					} else {
 						Author.AppendLines = appendLines
 						Author.RemoveLines = removeLines
-						AuthorStats[svnXmlLog.Author] = Author
 					}
+					AuthorStats[svnXmlLog.Author] = Author
+					authorTimeStat := make(statStruct.AuthorTimeStat)
+					authorTimeStat[svnXmlLog.Date] = Author
+					authorTimeStats[svnXmlLog.Author] = append(authorTimeStats[svnXmlLog.Author], authorTimeStat)
 					//fmt.Println(appendLines, removeLines, AuthorStats)
 				}
 			}
 		}
 	}
+	fmt.Println(authorTimeStats)
 	//输出结果
 	ConsoleOutPutTable(AuthorStats)
 
 }
 
 //console输出结果
-func ConsoleOutPutTable(AuthorStats map[string]AuthorStat) {/*{{{*/
+func ConsoleOutPutTable(AuthorStats map[string]statStruct.AuthorStat) {/*{{{*/
 	fmt.Printf(" ==user== \t==lines==\n")
 	for author, val := range AuthorStats {
 		fmt.Printf("%10s\t%d\n", author, val.AppendLines+val.RemoveLines)
