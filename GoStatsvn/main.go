@@ -75,11 +75,27 @@ func main() {
 					}
 					AuthorStats[svnXmlLog.Author] = Author
 					//分时统计
-					Author.AppendLines = appendLines
-					Author.RemoveLines = removeLines
-					authorTimeStat := make(statStruct.AuthorTimeStat)
-					authorTimeStat[svnXmlLog.Date] = Author
-					authorTimeStats[svnXmlLog.Author] = append(authorTimeStats[svnXmlLog.Author], authorTimeStat)
+					authorTimeStat, ok := authorTimeStats[svnXmlLog.Author]
+					saveTime, err := time.Parse("2006-01-02T15:04:05Z", svnXmlLog.Date)
+					util.CheckErr(err)
+					saveTimeStr := saveTime.Format("2006-01-02 15")
+					if ok {
+						Author, ok := authorTimeStat[saveTimeStr]
+						if ok {
+							Author.AppendLines += appendLines
+							Author.RemoveLines += removeLines
+						} else {
+							Author.AppendLines = appendLines
+							Author.RemoveLines = removeLines
+						}
+						authorTimeStat[saveTimeStr] = Author
+					} else {
+						Author.AppendLines = appendLines
+						Author.RemoveLines = removeLines
+						authorTimeStat = make(statStruct.AuthorTimeStat)
+						authorTimeStat[saveTimeStr] = Author
+					}
+					authorTimeStats[svnXmlLog.Author] = authorTimeStat
 					//fmt.Println(appendLines, removeLines, AuthorStats)
 				}
 			}
@@ -108,26 +124,22 @@ func ConsoleOutPutHourTable(authorTimeStats statStruct.AuthorTimeStats) {/*{{{*/
 	for authorName, Author := range authorTimeStats {
 		var minTime time.Time
 		var maxTime time.Time
-		for _, t := range Author {
-			for sTime,_ := range t {
-				fmtTime, err := time.Parse("2006-01-02T15:04:05Z", sTime)
-				util.CheckErr(err)
-				if minTime.Before(defaultSmallestTime) || minTime.After(fmtTime) {
-					minTime = fmtTime
-				}
-				if maxTime.Before(defaultSmallestTime) || maxTime.Before(fmtTime) {
-					maxTime = fmtTime
-				}
+		for sTime,_ := range Author {
+			fmtTime, err := time.Parse("2006-01-02 15", sTime)
+			util.CheckErr(err)
+			if minTime.Before(defaultSmallestTime) || minTime.After(fmtTime) {
+				minTime = fmtTime
+			}
+			if maxTime.Before(defaultSmallestTime) || maxTime.Before(fmtTime) {
+				maxTime = fmtTime
 			}
 		}
 		//Todo 用户按时合并,去重
 		//输出单个用户的数据
-		for _, t := range Author {
-			for sTime,Sval := range t {
-				fmtTime, err := time.Parse("2006-01-02T15:04:05Z", sTime)
-				util.CheckErr(err)
-				fmt.Printf("%10s\t%5d\t%12d\n", authorName, fmtTime.Hour(), Sval.AppendLines+Sval.RemoveLines)
-			}
+		for sTime,Sval := range Author {
+			fmtTime, err := time.Parse("2006-01-02 15", sTime)
+			util.CheckErr(err)
+			fmt.Printf("%10s\t%5d\t%12d\n", authorName, fmtTime.Hour(), Sval.AppendLines+Sval.RemoveLines)
 		}
 	}
 }/*}}}*/
