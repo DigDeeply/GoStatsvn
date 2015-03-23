@@ -106,6 +106,7 @@ func main() {
 	ConsoleOutPutTable(AuthorStats)
 	//输出按小时统计结果
 	ConsoleOutPutHourTable(authorTimeStats)
+	ConsoleOutPutWeekTable(authorTimeStats)
 
 }
 
@@ -144,3 +145,53 @@ func ConsoleOutPutHourTable(authorTimeStats statStruct.AuthorTimeStats) {/*{{{*/
 		}
 	}
 }/*}}}*/
+
+//console按周输出结果
+func ConsoleOutPutWeekTable(authorTimeStats statStruct.AuthorTimeStats) {
+	weekAuthorStats := make(map[string]map[string]statStruct.AuthorStat)
+	for authorName, Author := range authorTimeStats {
+		weekAuthorStat := make(map[string]statStruct.AuthorStat)
+		_, ok := weekAuthorStats[authorName]
+		if ok {
+		} else {
+			weekAuthorStats[authorName] = weekAuthorStat
+		}
+		for sTime, sAuthor := range Author {
+			fmtTime, err := time.Parse(DATE_HOUR, sTime)
+			util.CheckErr(err)
+			week := fmtTime.Weekday().String()
+			oldAuthorStat, ok := weekAuthorStat[week]
+			var authorStat statStruct.AuthorStat
+			if ok {
+				authorStat.AppendLines = oldAuthorStat.AppendLines + sAuthor.AppendLines
+				authorStat.RemoveLines = oldAuthorStat.RemoveLines + sAuthor.RemoveLines
+			} else {
+				authorStat.AppendLines = sAuthor.AppendLines
+				authorStat.RemoveLines = sAuthor.RemoveLines
+			}
+			weekAuthorStat[week] = authorStat
+		}
+		weekAuthorStats[authorName] = weekAuthorStat
+	}
+	fmt.Printf(" ==user== \t==week==\t==lines==\n")
+	allWeeks := []string {
+		"Sunday ",
+		"Monday",
+		"Tuesday",
+		"Wednesday",
+		"Thursday",
+		"Friday",
+		"Saturday",
+	}
+	//输出
+	for authorName, weekAuthorStat := range weekAuthorStats {
+		for _, oneDay := range allWeeks {
+			authorStat, ok := weekAuthorStat[oneDay]
+			if ok {
+				fmt.Printf("%10s\t%5s\t%12d\n", authorName, oneDay, authorStat.AppendLines + authorStat.RemoveLines)
+			} else {
+				fmt.Printf("%10s\t%5s\t%12d\n", authorName, oneDay, 0)
+			}
+		}
+	}
+}
