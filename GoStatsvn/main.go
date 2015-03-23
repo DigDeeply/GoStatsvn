@@ -13,6 +13,7 @@ import(
 
 const (
 	DEFAULT_SMALLEST_TIME_STRING = "1000-03-20T08:38:17.428370Z"
+	DATE_HOUR = "2006-01-02 15"
 )
 
 var svnXmlFile *string = flag.String("f", "", "svn log with xml format")
@@ -78,7 +79,7 @@ func main() {
 					authorTimeStat, ok := authorTimeStats[svnXmlLog.Author]
 					saveTime, err := time.Parse("2006-01-02T15:04:05Z", svnXmlLog.Date)
 					util.CheckErr(err)
-					saveTimeStr := saveTime.Format("2006-01-02 15")
+					saveTimeStr := saveTime.Format(DATE_HOUR)
 					if ok {
 						Author, ok := authorTimeStat[saveTimeStr]
 						if ok {
@@ -125,7 +126,7 @@ func ConsoleOutPutHourTable(authorTimeStats statStruct.AuthorTimeStats) {/*{{{*/
 		var minTime time.Time
 		var maxTime time.Time
 		for sTime,_ := range Author {
-			fmtTime, err := time.Parse("2006-01-02 15", sTime)
+			fmtTime, err := time.Parse(DATE_HOUR, sTime)
 			util.CheckErr(err)
 			if minTime.Before(defaultSmallestTime) || minTime.After(fmtTime) {
 				minTime = fmtTime
@@ -137,7 +138,7 @@ func ConsoleOutPutHourTable(authorTimeStats statStruct.AuthorTimeStats) {/*{{{*/
 		//Todo 用户按时合并,去重
 		//输出单个用户的数据
 		for sTime,Sval := range Author {
-			fmtTime, err := time.Parse("2006-01-02 15", sTime)
+			fmtTime, err := time.Parse(DATE_HOUR, sTime)
 			util.CheckErr(err)
 			fmt.Printf("%10s\t%5d\t%12d\n", authorName, fmtTime.Hour(), Sval.AppendLines+Sval.RemoveLines)
 		}
