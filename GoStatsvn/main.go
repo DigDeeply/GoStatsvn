@@ -106,6 +106,7 @@ func main() {
 	ConsoleOutPutTable(AuthorStats)
 	//输出按小时统计结果
 	ConsoleOutPutHourTable(authorTimeStats)
+	//输出按周统计结果
 	ConsoleOutPutWeekTable(authorTimeStats)
 
 }
@@ -147,7 +148,7 @@ func ConsoleOutPutHourTable(authorTimeStats statStruct.AuthorTimeStats) {/*{{{*/
 }/*}}}*/
 
 //console按周输出结果
-func ConsoleOutPutWeekTable(authorTimeStats statStruct.AuthorTimeStats) {
+func ConsoleOutPutWeekTable(authorTimeStats statStruct.AuthorTimeStats) {/*{{{*/
 	weekAuthorStats := make(map[string]map[string]statStruct.AuthorStat)
 	for authorName, Author := range authorTimeStats {
 		weekAuthorStat := make(map[string]statStruct.AuthorStat)
@@ -194,4 +195,4 @@ func ConsoleOutPutWeekTable(authorTimeStats statStruct.AuthorTimeStats) {
 			}
 		}
 	}
-}
+}/*}}}*/
