@@ -76,6 +76,7 @@ func main() {
 					}
 					AuthorStats[svnXmlLog.Author] = Author
 					//分时统计
+					//todo 这里不分时统计,记录原始log
 					authorTimeStat, ok := authorTimeStats[svnXmlLog.Author]
 					saveTime, err := time.Parse("2006-01-02T15:04:05Z", svnXmlLog.Date)
 					util.CheckErr(err)
@@ -120,6 +121,7 @@ func ConsoleOutPutTable(AuthorStats map[string]statStruct.AuthorStat) {/*{{{*/
 }/*}}}*/
 
 //console按小时输出结果
+//todo 此处有bug,1.没有全部按小时归并，还是按每天每小时归并的。2.显示的小时不是按24小时制
 func ConsoleOutPutHourTable(authorTimeStats statStruct.AuthorTimeStats) {/*{{{*/
 	defaultSmallestTime, _ := time.Parse("2006-01-02T15:04:05Z", DEFAULT_SMALLEST_TIME_STRING)
 	fmt.Printf(" ==user== \t==hour==\t==lines==\n")
