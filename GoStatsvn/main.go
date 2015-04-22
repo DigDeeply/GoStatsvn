@@ -14,6 +14,7 @@ import(
 const (
 	DEFAULT_SMALLEST_TIME_STRING = "1000-03-20T08:38:17.428370Z"
 	DATE_HOUR = "2006-01-02 15"
+	DATE_MINUTE = "2006-01-02T15:04:05Z"
 )
 
 var svnXmlFile *string = flag.String("f", "", "svn log with xml format")
@@ -80,7 +81,7 @@ func main() {
 					authorTimeStat, ok := authorTimeStats[svnXmlLog.Author]
 					saveTime, err := time.Parse("2006-01-02T15:04:05Z", svnXmlLog.Date)
 					util.CheckErr(err)
-					saveTimeStr := saveTime.Format(DATE_HOUR)
+					saveTimeStr := saveTime.Format(DATE_MINUTE)
 					if ok {
 						Author, ok := authorTimeStat[saveTimeStr]
 						if ok {
@@ -105,10 +106,11 @@ func main() {
 	}
 	//输出结果
 	ConsoleOutPutTable(AuthorStats)
+	fmt.Printf("%v\n", authorTimeStats)
 	//输出按小时统计结果
-	ConsoleOutPutHourTable(authorTimeStats)
+	//ConsoleOutPutHourTable(authorTimeStats)
 	//输出按周统计结果
-	ConsoleOutPutWeekTable(authorTimeStats)
+	//ConsoleOutPutWeekTable(authorTimeStats)
 
 }
 
