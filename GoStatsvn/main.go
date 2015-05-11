@@ -111,7 +111,11 @@ func main() {
 	fmt.Printf("%d\t%d\n", minTimestamp, maxTimestamp)
 	dayAuthorStats := StatLogByDay(authorTimeStats)
 	fmt.Printf("%v\n", dayAuthorStats)
-	StatLogByFullDay(dayAuthorStats, minTimestamp, maxTimestamp)
+	dayAuthorStatsOutput := StatLogByFullDay(dayAuthorStats, minTimestamp, maxTimestamp)
+	xaxis := util.GetXAxis(minTimestamp, maxTimestamp)
+	series := util.GetSeries(dayAuthorStatsOutput)
+	fmt.Printf("%v\n%v\n", xaxis, series)
+	util.DrawCharts(xaxis, series)
 	//输出按小时统计结果
 	//ConsoleOutPutHourTable(authorTimeStats)
 	//输出按周统计结果
@@ -161,29 +165,35 @@ func StatLogByDay(authorTimeStats statStruct.AuthorTimeStats) (dayAuthorStats st
 	return
 }/*}}}*/
 
-func StatLogByFullDay(dayAuthorStats statStruct.AuthorTimeStats, minTimestamp int64, maxTimestamp int64) {
+func StatLogByFullDay(dayAuthorStats statStruct.AuthorTimeStats, minTimestamp int64, maxTimestamp int64) (dayAuthorStatsOutput statStruct.AuthorTimeStats) {/*{{{*/
 	//得到时间的开始和结束日期
-	minTime := time.Unix(minTimestamp, 0);
+	minTime := time.Unix(minTimestamp, 0)
 	minDay := minTime.Format(DATE_DAY)
 	minTime, _ = time.Parse(DATE_DAY, minDay)
 	minDayTimestamp := minTime.Unix()
-	maxTime := time.Unix(maxTimestamp, 0);
+	maxTime := time.Unix(maxTimestamp, 0)
 	maxDay := maxTime.Format(DATE_DAY)
 	maxTime, _ = time.Parse(DATE_DAY, maxDay)
 	maxDayTimestamp := maxTime.Unix()
+	dayAuthorStatsOutput = make(statStruct.AuthorTimeStats)
 	//遍历所有author
 	for author, dayAuthorStat := range dayAuthorStats {
 		fmt.Printf("====user: %s=====\n", author)
 		minDayAuthor := minDay
 		minTimeAuthor := minTime
 		minDayTimestampAuthor := minDayTimestamp
+		dayAuthorStatOutput := make(statStruct.AuthorTimeStat)
 		//输出每个用户每天的信息
 		for {
 			authorStat, ok := dayAuthorStat[minDayAuthor]
 			if ok {
 				fmt.Printf("%s\t%d\n", minDayAuthor, authorStat.AppendLines+authorStat.RemoveLines)
+				dayAuthorStatOutput[minDayAuthor] = authorStat
 			} else {
 				fmt.Printf("%s\t%d\n", minDayAuthor, 0)
+				authorStat.AppendLines = 0
+				authorStat.RemoveLines = 0
+				dayAuthorStatOutput[minDayAuthor] = authorStat
 			}
 			minDayTimestampAuthor += 86400;
 			minTimeAuthor = time.Unix(minDayTimestampAuthor, 0)
@@ -192,12 +202,15 @@ func StatLogByFullDay(dayAuthorStats statStruct.AuthorTimeStats, minTimestamp in
 				break;
 			}
 		}
+		dayAuthorStatsOutput[author] = dayAuthorStatOutput
 	}
-}
+	fmt.Printf("%v\n", dayAuthorStatsOutput)
+	return
+}/*}}}*/
 
 //console 按天输出结果，空余的天按0补齐
 //获取时间的最大值和最小值
-func getMinMaxTimestamp(authorTimeStats statStruct.AuthorTimeStats) (minTimestamp int64,  maxTimestamp int64)  {
+func getMinMaxTimestamp(authorTimeStats statStruct.AuthorTimeStats) (minTimestamp int64,  maxTimestamp int64)  {/*{{{*/
 	minTimestamp = 0
 	maxTimestamp = 0;
 	//先取得时间的最大值和最小值
@@ -217,7 +230,7 @@ func getMinMaxTimestamp(authorTimeStats statStruct.AuthorTimeStats) (minTimestam
 		//fmt.Printf("%d\t%d\n", minTimestamp, maxTimestamp)
 	}
 	return
-}
+}/*}}}*/
 
 //console按小时输出结果
 //todo 此处有bug,1.没有全部按小时归并，还是按每天每小时归并的。2.显示的小时不是按24小时制
