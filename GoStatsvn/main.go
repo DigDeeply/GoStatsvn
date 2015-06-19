@@ -9,6 +9,8 @@ import(
 	"strconv"
 	"statStruct"
 	"time"
+	"html/template"
+	"net/http"
 )
 
 const (
@@ -20,7 +22,7 @@ const (
 
 var svnXmlFile *string = flag.String("f", "", "svn log with xml format")
 var svnDir *string = flag.String("d", "", "code working directory")
-
+var chartData statStruct.ChartData
 
 func main() {
 	flag.Parse()
@@ -114,8 +116,10 @@ func main() {
 	dayAuthorStatsOutput := StatLogByFullDay(dayAuthorStats, minTimestamp, maxTimestamp)
 	xaxis := util.GetXAxis(minTimestamp, maxTimestamp)
 	series := util.GetSeries(dayAuthorStatsOutput)
-	fmt.Printf("%v\n%v\n", xaxis, series)
-	util.DrawCharts(xaxis, series)
+	chartData.XAxis = xaxis
+	chartData.Series = series
+	fmt.Printf("%s\n%s\n", xaxis, series)
+	DrawCharts()
 	//输出按小时统计结果
 	//ConsoleOutPutHourTable(authorTimeStats)
 	//输出按周统计结果
@@ -310,3 +314,30 @@ func ConsoleOutPutWeekTable(authorTimeStats statStruct.AuthorTimeStats) {/*{{{*/
 		}
 	}
 }/*}}}*/
+
+func showHandle(w http.ResponseWriter, r *http.Request) {
+	//filename := r.FormValue("id")
+	//imagePath := UPLOAD_DIR + "/" + filename
+
+	//w.Header().Set("Content-Type", "text/html")
+	//http.ServeFile(w, r, "src/gostatsvn.html")
+	t, err := template.ParseFiles("src/gostatsvn.html")
+	if err != nil {
+		log.Fatal("not find file: ", err.Error())
+	} else {
+		locals := make(map[string]interface{})
+		xaxis := template.HTML(chartData.XAxis)
+		series := template.HTML(chartData.Series)
+		locals["xaxis"] = xaxis
+		locals["series"] = series
+		t.Execute(w, locals)
+	}
+}
+
+func DrawCharts() {
+	http.HandleFunc("/", showHandle)
+	err := http.ListenAndServe(":8088", nil)
+	if err != nil {
+		log.Fatal("listen fatal: ", err.Error())
+	}
+}
