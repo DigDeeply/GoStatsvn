@@ -336,6 +336,7 @@ func showHandle(w http.ResponseWriter, r *http.Request) {
 
 func DrawCharts() {
 	http.HandleFunc("/", showHandle)
+	log.Println("listen on 8088")
 	err := http.ListenAndServe(":8088", nil)
 	if err != nil {
 		log.Fatal("listen fatal: ", err.Error())

@@ -11,7 +11,7 @@ start@2015-03-16 , Go Go Go.
 first you need to generate a svn log with xml format, you can also only dump a part of the svn log with -r param.  
 首先你需要导出一份xml格式的svn日志,你也可以使用-r参数来限定导出的日志数,避免统计过多.  
 then run the GoStatsvn with -f the svn log file, and -d the svn working directory.  
-然后运行编译好的GoStatsvn,使用-f参数指定svn日志文件的位置，-d参数指定svn的开发路径.  
+然后运行编译好的GoStatsvn,使用-f参数指定svn日志文件的位置，-d参数指定svn的开发路径.(目前只支持相对路径>_<,需要改进)  
 <pre><code>
 svn log -v --xml  > svnlog.xml
 ./GoStatsvn -f svnlog.xml -d workingDirectory

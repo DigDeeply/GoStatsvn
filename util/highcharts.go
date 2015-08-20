@@ -9,6 +9,7 @@ import (
 //	"strconv"
 //	"strings"
 	"time"
+	"sort"
 	"statStruct"
 )
 
@@ -63,9 +64,14 @@ func GetSeries (dayAuthorStats statStruct.AuthorTimeStats) (seriesString string)
 		serie.Name = author
 		j := 0
 		tmpData := make([]int, 365)
-		for _, stat := range stats {
+		var keys []string
+		for k, _ := range stats {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
 			j++
-			tmpData[j] = stat.AppendLines + stat.RemoveLines
+			tmpData[j] = stats[k].AppendLines + stats[k].RemoveLines
 		}
 		serie.Data = tmpData[1:j+1]
 		i++
