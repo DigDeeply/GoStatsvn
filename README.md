@@ -19,3 +19,5 @@ svn log -v --xml  > svnlog.xml
 
 #demo
 ![demo](http://p9.qhimg.com/d/inn/6379de03/GoStatsvn-stat-result.png "a GoStatsvn result demo")
+#chart
+![chart](http://p0.qhimg.com/d/inn/c776308a/qqqq.png "a GoStatsvn result chart demo")
