@@ -2,15 +2,15 @@
 package util
 
 import (
-//	"bytes"
+	//	"bytes"
 	"encoding/json"
-//	"io/ioutil"
-//	"log"
-//	"strconv"
-//	"strings"
-	"time"
+	//	"io/ioutil"
+	//	"log"
+	//	"strconv"
+	//	"strings"
+	"GoStatsvn/statStruct"
 	"sort"
-	"statStruct"
+	"time"
 )
 
 //line-basic-x
@@ -21,7 +21,7 @@ type XAxis struct {
 //line-basic-data-single
 type Serie struct {
 	Name string `json:"name"`
-	Data []int `json:"data"`
+	Data []int  `json:"data"`
 }
 
 //line-basic-data
@@ -29,7 +29,7 @@ type Series struct {
 	Series []Serie `json:"series"`
 }
 
-func GetXAxis (minTimestamp int64, maxTimestamp int64) (xstring string) {/*{{{*/
+func GetXAxis(minTimestamp int64, maxTimestamp int64) (xstring string) { /*{{{*/
 	var xaxis XAxis
 	minTime := time.Unix(minTimestamp, 0)
 	minDay := minTime.Format(DATE_DAY)
@@ -39,28 +39,28 @@ func GetXAxis (minTimestamp int64, maxTimestamp int64) (xstring string) {/*{{{*/
 	i := 1
 	slice[i] = minDay
 	for {
-			minDayTimestamp += 86400;
-			minTime = time.Unix(minDayTimestamp, 0)
-			minDay = minTime.Format(DATE_DAY)
-			//todo output minDay
-			if (minDayTimestamp > maxTimestamp) {
-				break;
-			}
-			i++
-			slice[i] = minDay
+		minDayTimestamp += 86400
+		minTime = time.Unix(minDayTimestamp, 0)
+		minDay = minTime.Format(DATE_DAY)
+		//todo output minDay
+		if minDayTimestamp > maxTimestamp {
+			break
+		}
+		i++
+		slice[i] = minDay
 	}
-	xaxis.Categories = slice[1:i+1]
+	xaxis.Categories = slice[1 : i+1]
 	xbytes, _ := json.Marshal(xaxis)
 	xstring = string(xbytes)
 	return
-}/*}}}*/
+} /*}}}*/
 
-func GetSeries (dayAuthorStats statStruct.AuthorTimeStats) (seriesString string) {/*{{{*/
+func GetSeries(dayAuthorStats statStruct.AuthorTimeStats) (seriesString string) { /*{{{*/
 	var series Series
 	tmpSeries := make([]Serie, 50)
 	i := 0
 	for author, stats := range dayAuthorStats {
-		var serie Serie;
+		var serie Serie
 		serie.Name = author
 		j := 0
 		tmpData := make([]int, 365)
@@ -73,13 +73,12 @@ func GetSeries (dayAuthorStats statStruct.AuthorTimeStats) (seriesString string)
 			j++
 			tmpData[j] = stats[k].AppendLines + stats[k].RemoveLines
 		}
-		serie.Data = tmpData[1:j+1]
+		serie.Data = tmpData[1 : j+1]
 		i++
 		tmpSeries[i] = serie
 	}
-	series.Series = tmpSeries[1:i+1]
-	seriesByte , _ := json.Marshal(series)
+	series.Series = tmpSeries[1 : i+1]
+	seriesByte, _ := json.Marshal(series)
 	seriesString = string(seriesByte)
 	return
-}/*}}}*/
-
+} /*}}}*/

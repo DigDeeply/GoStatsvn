@@ -1,23 +1,23 @@
 package main
 
-import(
-    "fmt"
+import (
+	"GoStatsvn/statStruct"
+	"GoStatsvn/util"
 	"flag"
-	"log"
-	"os"
-	"util"
-	"strconv"
-	"statStruct"
-	"time"
+	"fmt"
 	"html/template"
+	"log"
 	"net/http"
+	"os"
+	"strconv"
+	"time"
 )
 
 const (
 	DEFAULT_SMALLEST_TIME_STRING = "1000-03-20T08:38:17.428370Z"
-	DATE_DAY = "2006-01-02"
-	DATE_HOUR = "2006-01-02 15"
-	DATE_SECOND = "2006-01-02T15:04:05Z"
+	DATE_DAY                     = "2006-01-02"
+	DATE_HOUR                    = "2006-01-02 15"
+	DATE_SECOND                  = "2006-01-02T15:04:05Z"
 )
 
 var svnXmlFile *string = flag.String("f", "", "svn log with xml format")
@@ -40,15 +40,15 @@ func main() {
 	}
 
 	//判断文件是否存在
-	if _,err := os.Stat(*svnXmlFile); os.IsNotExist(err) {
+	if _, err := os.Stat(*svnXmlFile); os.IsNotExist(err) {
 		log.Fatalf("svn log file '%s' not exists.", *svnXmlFile)
 	}
 
 	//获取svn root目录
-	svnRoot, err := util.GetSvnRoot(*svnDir);
+	svnRoot, err := util.GetSvnRoot(*svnDir)
 
 	svnXmlLogs, err := util.ParaseSvnXmlLog(*svnXmlFile)
-//	fmt.Printf("%v", svnXmlLogs)
+	//	fmt.Printf("%v", svnXmlLogs)
 	util.CheckErr(err)
 
 	authorTimeStats := make(statStruct.AuthorTimeStats)
@@ -128,15 +128,15 @@ func main() {
 }
 
 //console输出结果
-func ConsoleOutPutTable(AuthorStats map[string]statStruct.AuthorStat) {/*{{{*/
+func ConsoleOutPutTable(AuthorStats map[string]statStruct.AuthorStat) { /*{{{*/
 	fmt.Printf(" ==user== \t==lines==\n")
 	for author, val := range AuthorStats {
 		fmt.Printf("%10s\t%5d\n", author, val.AppendLines+val.RemoveLines)
 	}
-}/*}}}*/
+} /*}}}*/
 
 //返回按天格式化好的数据
-func StatLogByDay(authorTimeStats statStruct.AuthorTimeStats) (dayAuthorStats statStruct.AuthorTimeStats) {/*{{{*/
+func StatLogByDay(authorTimeStats statStruct.AuthorTimeStats) (dayAuthorStats statStruct.AuthorTimeStats) { /*{{{*/
 	dayAuthorStats = make(map[string]statStruct.AuthorTimeStat)
 	for author, detail := range authorTimeStats {
 		dayAuthorStat := make(map[string]statStruct.AuthorStat)
@@ -151,7 +151,7 @@ func StatLogByDay(authorTimeStats statStruct.AuthorTimeStats) (dayAuthorStats st
 			util.CheckErr(err)
 			timeFormat := timeTime.Format(DATE_DAY)
 			//fmt.Printf("%v\t%v\n", timeString, timeTime)
-			if (err == nil) {
+			if err == nil {
 				oldDayAuthorStat, ok := dayAuthorStat[timeFormat]
 				var authorStat statStruct.AuthorStat
 				if ok {
@@ -167,9 +167,9 @@ func StatLogByDay(authorTimeStats statStruct.AuthorTimeStats) (dayAuthorStats st
 		dayAuthorStats[author] = dayAuthorStat
 	}
 	return
-}/*}}}*/
+} /*}}}*/
 
-func StatLogByFullDay(dayAuthorStats statStruct.AuthorTimeStats, minTimestamp int64, maxTimestamp int64) (dayAuthorStatsOutput statStruct.AuthorTimeStats) {/*{{{*/
+func StatLogByFullDay(dayAuthorStats statStruct.AuthorTimeStats, minTimestamp int64, maxTimestamp int64) (dayAuthorStatsOutput statStruct.AuthorTimeStats) { /*{{{*/
 	//得到时间的开始和结束日期
 	minTime := time.Unix(minTimestamp, 0)
 	minDay := minTime.Format(DATE_DAY)
@@ -199,34 +199,34 @@ func StatLogByFullDay(dayAuthorStats statStruct.AuthorTimeStats, minTimestamp in
 				authorStat.RemoveLines = 0
 				dayAuthorStatOutput[minDayAuthor] = authorStat
 			}
-			minDayTimestampAuthor += 86400;
+			minDayTimestampAuthor += 86400
 			minTimeAuthor = time.Unix(minDayTimestampAuthor, 0)
 			minDayAuthor = minTimeAuthor.Format(DATE_DAY)
-			if (minDayTimestampAuthor > maxDayTimestamp) {
-				break;
+			if minDayTimestampAuthor > maxDayTimestamp {
+				break
 			}
 		}
 		dayAuthorStatsOutput[author] = dayAuthorStatOutput
 	}
 	fmt.Printf("%v\n", dayAuthorStatsOutput)
 	return
-}/*}}}*/
+} /*}}}*/
 
 //console 按天输出结果，空余的天按0补齐
 //获取时间的最大值和最小值
-func getMinMaxTimestamp(authorTimeStats statStruct.AuthorTimeStats) (minTimestamp int64,  maxTimestamp int64)  {/*{{{*/
+func getMinMaxTimestamp(authorTimeStats statStruct.AuthorTimeStats) (minTimestamp int64, maxTimestamp int64) { /*{{{*/
 	minTimestamp = 0
-	maxTimestamp = 0;
+	maxTimestamp = 0
 	//先取得时间的最大值和最小值
 	for _, detail := range authorTimeStats {
 		//fmt.Printf("%s\t%v\n", author, detail)
 		for timeString, _ := range detail {
 			timeTime, err := time.Parse(DATE_SECOND, timeString)
-			if (err == nil) {
-				if (minTimestamp == 0 || minTimestamp > timeTime.Unix()) {
+			if err == nil {
+				if minTimestamp == 0 || minTimestamp > timeTime.Unix() {
 					minTimestamp = timeTime.Unix()
 				}
-				if (maxTimestamp < timeTime.Unix()) {
+				if maxTimestamp < timeTime.Unix() {
 					maxTimestamp = timeTime.Unix()
 				}
 			}
@@ -234,18 +234,18 @@ func getMinMaxTimestamp(authorTimeStats statStruct.AuthorTimeStats) (minTimestam
 		//fmt.Printf("%d\t%d\n", minTimestamp, maxTimestamp)
 	}
 	return
-}/*}}}*/
+} /*}}}*/
 
 //console按小时输出结果
 //todo 此处有bug,1.没有全部按小时归并，还是按每天每小时归并的。2.显示的小时不是按24小时制
-func ConsoleOutPutHourTable(authorTimeStats statStruct.AuthorTimeStats) {/*{{{*/
+func ConsoleOutPutHourTable(authorTimeStats statStruct.AuthorTimeStats) { /*{{{*/
 	defaultSmallestTime, _ := time.Parse("2006-01-02T15:04:05Z", DEFAULT_SMALLEST_TIME_STRING)
 	fmt.Printf(" ==user== \t==hour==\t==lines==\n")
 	//先取到时间的区间值
 	for authorName, Author := range authorTimeStats {
 		var minTime time.Time
 		var maxTime time.Time
-		for sTime,_ := range Author {
+		for sTime, _ := range Author {
 			fmtTime, err := time.Parse(DATE_HOUR, sTime)
 			util.CheckErr(err)
 			if minTime.Before(defaultSmallestTime) || minTime.After(fmtTime) {
@@ -257,16 +257,16 @@ func ConsoleOutPutHourTable(authorTimeStats statStruct.AuthorTimeStats) {/*{{{*/
 		}
 		//Todo 用户按时合并,去重
 		//输出单个用户的数据
-		for sTime,Sval := range Author {
+		for sTime, Sval := range Author {
 			fmtTime, err := time.Parse(DATE_HOUR, sTime)
 			util.CheckErr(err)
 			fmt.Printf("%10s\t%5d\t%12d\n", authorName, fmtTime.Hour(), Sval.AppendLines+Sval.RemoveLines)
 		}
 	}
-}/*}}}*/
+} /*}}}*/
 
 //console按周输出结果
-func ConsoleOutPutWeekTable(authorTimeStats statStruct.AuthorTimeStats) {/*{{{*/
+func ConsoleOutPutWeekTable(authorTimeStats statStruct.AuthorTimeStats) { /*{{{*/
 	weekAuthorStats := make(map[string]map[string]statStruct.AuthorStat)
 	for authorName, Author := range authorTimeStats {
 		weekAuthorStat := make(map[string]statStruct.AuthorStat)
@@ -293,7 +293,7 @@ func ConsoleOutPutWeekTable(authorTimeStats statStruct.AuthorTimeStats) {/*{{{*/
 		weekAuthorStats[authorName] = weekAuthorStat
 	}
 	fmt.Printf(" ==user== \t==week==\t==lines==\n")
-	allWeeks := []string {
+	allWeeks := []string{
 		"Sunday ",
 		"Monday",
 		"Tuesday",
@@ -307,13 +307,13 @@ func ConsoleOutPutWeekTable(authorTimeStats statStruct.AuthorTimeStats) {/*{{{*/
 		for _, oneDay := range allWeeks {
 			authorStat, ok := weekAuthorStat[oneDay]
 			if ok {
-				fmt.Printf("%10s\t%5s\t%12d\n", authorName, oneDay, authorStat.AppendLines + authorStat.RemoveLines)
+				fmt.Printf("%10s\t%5s\t%12d\n", authorName, oneDay, authorStat.AppendLines+authorStat.RemoveLines)
 			} else {
 				fmt.Printf("%10s\t%5s\t%12d\n", authorName, oneDay, 0)
 			}
 		}
 	}
-}/*}}}*/
+} /*}}}*/
 
 func showHandle(w http.ResponseWriter, r *http.Request) {
 	//filename := r.FormValue("id")
