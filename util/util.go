@@ -6,11 +6,11 @@ import (
 	"encoding/xml"
 	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
-	"os"
-	"regexp"
 )
 
 //svn xml log path struct
@@ -90,8 +90,11 @@ func ParaseSvnXmlLog(svnXmlLogFile string) (svnXmlLogs SvnXmlLogs, err error) { 
 } /*}}}*/
 
 //获取svn根
-func GetSvnRoot(workDir string) (svnRoot string, err error) {/*{{{*/
+func GetSvnRoot(workDir string) (svnRoot string, err error) { /*{{{*/
 	pwd, _ := os.Getwd()
+	if strings.HasPrefix(workDir, "/") {
+		pwd = ""
+	}
 	app := "svn"
 	param1 := "info"
 	param2 := "--xml"
@@ -106,22 +109,21 @@ func GetSvnRoot(workDir string) (svnRoot string, err error) {/*{{{*/
 	} else {
 		re := regexp.MustCompile(`(?i)<root>(.*)</root>`)
 		roots := re.FindStringSubmatch(out.String())
-		if len(roots) > 1 {		
+		if len(roots) > 1 {
 			return roots[1], nil
 		} else {
 			log.Fatalf("cannot find the svn root by svn info")
 			return "", nil
 		}
 	}
-}/*}}}*/
+} /*}}}*/
 
 //封装的checkErr
-func CheckErr(err error) (err2 error){/*{{{*/
+func CheckErr(err error) (err2 error) { /*{{{*/
 	if err != nil {
 		log.Panic(err)
 		return err
 	} else {
 		return nil
 	}
-}/*}}}*/
-
+} /*}}}*/

@@ -22,6 +22,7 @@ const (
 
 var svnXmlFile *string = flag.String("f", "", "svn log with xml format")
 var svnDir *string = flag.String("d", "", "code working directory")
+var chartTemplate *string = flag.String("t", "", "hightcharts Template file")
 var chartData statStruct.ChartData
 
 func main() {
@@ -36,6 +37,12 @@ func main() {
 	//判断有没有指定svnlog.xml文件
 	if *svnDir == "" {
 		log.Fatal("-d cannot be empty, -d svnWorkDir")
+		return
+	}
+
+	//判断有没有指定画图的模版文件
+	if *chartTemplate == "" {
+		log.Fatal("-t cannot be empty, -t hightchartsTemplate file path")
 		return
 	}
 
@@ -321,7 +328,7 @@ func showHandle(w http.ResponseWriter, r *http.Request) {
 
 	//w.Header().Set("Content-Type", "text/html")
 	//http.ServeFile(w, r, "src/gostatsvn.html")
-	t, err := template.ParseFiles("src/gostatsvn.html")
+	t, err := template.ParseFiles(*chartTemplate)
 	if err != nil {
 		log.Fatal("not find file: ", err.Error())
 	} else {
